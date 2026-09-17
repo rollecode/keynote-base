@@ -7,7 +7,7 @@
 <p align="center">
   <img style="height:28px;width:auto;" src="https://github.com/user-attachments/assets/86155721-5148-4ca1-b2f1-9731af65bf27" alt="Keynote" />
   <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML" />
-  <img src="https://img.shields.io/badge/PDF-b21c20?style=for-the-badge&logo=html5&logoColor=white" alt="PDF" />
+  <img src="https://img.shields.io/badge/PDF-b21c20?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTYgMmg4bDYgNnYxMmEyIDIgMCAwIDEtMiAySDZhMiAyIDAgMCAxLTItMlY0YTIgMiAwIDAgMSAyLTJ6bTcgMnY1aDVsLTUtNXpNNy41IDEzSDljMS4xIDAgMS45LjcgMS45IDEuN1MxMC4xIDE2LjUgOSAxNi41aC0uNlYxOGgtLjl2LTV6bS45Ljh2MS45SDljLjYgMCAxLS40IDEtLjk1UzkuNiAxMy44IDkgMTMuOGgtLjZ6TTEyIDEzaDEuNWMxLjQgMCAyLjMgMSAyLjMgMi41UzE0LjkgMTggMTMuNSAxOEgxMnYtNXptLjkuOHYzLjRoLjVjLjkgMCAxLjQtLjYgMS40LTEuN3MtLjUtMS43LTEuNC0xLjdoLS41ek0xNi44IDEzaDIuOHYuOGgtMS45djEuM2gxLjh2LjhoLTEuOFYxOGgtLjl2LTV6Ii8+PC9zdmc+&logoColor=white" alt="PDF" />
   <img src="https://img.shields.io/badge/bash-%23121011.svg?style=for-the-badge&color=%23222222&logo=gnu-bash&logoColor=white" alt="Bash" />
   <img src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="macOS" />
 </p>
