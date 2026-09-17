@@ -13,8 +13,8 @@ ground="0xF4F0FF"
 panel="0xE6DEFA"
 
 ffmpeg -y -loglevel error -f lavfi -i "color=c=$ground:s=1920x1080" -frames:v 1 "$out/bg.png"
-ffmpeg -y -loglevel error -f lavfi -i "color=c=$panel:s=795x120" -frames:v 1 "$out/panel-left.png"
-ffmpeg -y -loglevel error -f lavfi -i "color=c=$panel:s=795x440" -frames:v 1 "$out/panel-right.png"
+ffmpeg -y -loglevel error -f lavfi -i "color=c=$panel:s=819x110" -frames:v 1 "$out/panel-left.png"
+ffmpeg -y -loglevel error -f lavfi -i "color=c=$panel:s=819x440" -frames:v 1 "$out/panel-right.png"
 
 # Icon row, lifted straight out of index.html so the two never drift apart.
 python3 - "$root" "$out" <<'PY'

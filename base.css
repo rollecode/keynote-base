@@ -43,15 +43,15 @@ html, body {
 .title__column {
   flex-grow: 1;
   min-width: 0;
-  padding: 126px 0 108px 162px;
+  padding: 84px 0 72px 108px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.event { display: flex; flex-direction: column; gap: 18px; }
+.event { display: flex; align-items: center; gap: 24px; }
 
-.event__logo { display: block; width: 360px; height: auto; }
+.event__logo { display: block; width: 240px; height: auto; }
 
 .eyebrow {
   font-size: 29px;
@@ -116,7 +116,7 @@ h1 em {
 /* Content slides */
 
 .content {
-  padding: 126px 162px 108px;
+  padding: 84px 108px 72px;
   display: flex;
   flex-direction: column;
   gap: 69px;
