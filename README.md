@@ -52,6 +52,7 @@ The headline move is one Unbounded phrase followed by one Instrument Serif itali
 | Violet | `#4C1D95` | 9.8:1 |
 | Subtitle | `#3A2240` | 12.7:1 |
 | Secondary | `#4A3C4E` | 9.2:1 |
+| Event, the logo and its line | `#534669` | 7.7:1 |
 | Body | `#2E1B34` | 14.2:1 |
 | Code panel | `#E6DEFA` | its ink `#2B1B33` at 12.4:1 |
 

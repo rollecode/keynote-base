@@ -2,6 +2,7 @@
   --ground: #F4F0FF;
   --ink: #190834;
   --violet: #4C1D95;
+  --event: #534669;
   --subtitle: #3A2240;
   --secondary: #4A3C4E;
   --body: #2E1B34;
@@ -43,20 +44,20 @@ html, body {
 .title__column {
   flex-grow: 1;
   min-width: 0;
-  padding: 84px 0 72px 108px;
+  padding: 76px 0 72px 108px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.event { display: flex; align-items: center; gap: 24px; }
+.event { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 
 .event__logo { display: block; width: 240px; height: auto; }
 
 .eyebrow {
-  font-size: 29px;
+  font-size: 24px;
   font-weight: 500;
-  color: var(--violet);
+  color: var(--event);
 }
 
 .title__headline { display: flex; flex-direction: column; gap: 30px; }

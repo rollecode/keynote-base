@@ -13,6 +13,7 @@ set subtitleColor to {14906, 8738, 16448} -- #3A2240
 set secondaryColor to {19018, 15420, 20046} -- #4A3C4E
 set bodyColor to {11822, 6939, 13364} -- #2E1B34
 set panelInkColor to {11051, 6939, 13107} -- #2B1B33
+set eventColor to {21331, 18018, 26985} -- #534669
 
 tell application "Keynote"
   activate
@@ -27,24 +28,24 @@ tell application "Keynote"
     tell slide 1
       make new image with properties {file:(POSIX file (assetDir & "bg.png")), position:{0, 0}, width:1920, height:1080}
       make new image with properties {file:(POSIX file (repoRoot & "/assets/portrait-crop.jpg")), position:{1461, 0}, width:459, height:1080}
-      make new image with properties {file:(POSIX file (assetDir & "mindtrek.png")), position:{108, 86}, width:240, height:31}
-      make new image with properties {file:(POSIX file (assetDir & "icons.png")), position:{108, 972}, width:353, height:32}
+      make new image with properties {file:(POSIX file (assetDir & "mindtrek.png")), position:{108, 76}, width:240, height:31}
+      make new image with properties {file:(POSIX file (assetDir & "icons.png")), position:{108, 975}, width:353, height:32}
 
-      set t1 to make new text item with properties {object text:"Mindtrek 2026, Tampere, 6th of October, 2026", position:{372, 84}, width:900, height:40}
+      set t1 to make new text item with properties {object text:"Mindtrek 2026, Tampere, 6th of October, 2026", position:{108, 132}, width:900, height:34}
       tell object text of t1
         set its font to "Geist-Medium"
-        set its size to 29
-        set its color to violetColor
+        set its size to 24
+        set its color to eventColor
       end tell
 
-      set t2 to make new text item with properties {object text:"Sovereign", position:{108, 287}, width:1100, height:150}
+      set t2 to make new text item with properties {object text:"Sovereign", position:{108, 302}, width:1100, height:150}
       tell object text of t2
         set its font to "Unbounded-Regular_ExtraBold"
         set its size to 138
         set its color to inkColor
       end tell
 
-      set t3 to make new text item with properties {object text:"by habit", position:{108, 401}, width:1100, height:180}
+      set t3 to make new text item with properties {object text:"by habit", position:{108, 416}, width:1100, height:180}
       tell object text of t3
         set its font to "InstrumentSerif-Italic"
         set its size to 174
@@ -52,35 +53,35 @@ tell application "Keynote"
       end tell
 
       -- Two items, because Keynote leads multi-line text far looser than the browser.
-      set t4 to make new text item with properties {object text:"20 years of self-hosting from source", position:{108, 597}, width:1100, height:52}
+      set t4 to make new text item with properties {object text:"20 years of self-hosting from source", position:{108, 613}, width:1100, height:52}
       tell object text of t4
         set its font to "Geist-Regular"
         set its size to 38
         set its color to subtitleColor
       end tell
 
-      set t4b to make new text item with properties {object text:"on European servers", position:{108, 649}, width:1100, height:52}
+      set t4b to make new text item with properties {object text:"on European servers", position:{108, 665}, width:1100, height:52}
       tell object text of t4b
         set its font to "Geist-Regular"
         set its size to 38
         set its color to subtitleColor
       end tell
 
-      set t5 to make new text item with properties {object text:"Rolle Laukkarinen", position:{108, 864}, width:1100, height:48}
+      set t5 to make new text item with properties {object text:"Rolle Laukkarinen", position:{108, 869}, width:1100, height:48}
       tell object text of t5
         set its font to "Geist-SemiBold"
         set its size to 36
         set its color to inkColor
       end tell
 
-      set t6 to make new text item with properties {object text:"Founder and CTO, Digitoimisto Dude Oy", position:{108, 912}, width:1100, height:40}
+      set t6 to make new text item with properties {object text:"Founder and CTO, Digitoimisto Dude Oy", position:{108, 917}, width:1100, height:40}
       tell object text of t6
         set its font to "Geist-Regular"
         set its size to 29
         set its color to secondaryColor
       end tell
 
-      set t7 to make new text item with properties {object text:"rolle.social", position:{491, 966}, width:500, height:42}
+      set t7 to make new text item with properties {object text:"rolle.social", position:{491, 969}, width:500, height:42}
       tell object text of t7
         set its font to "Geist-Medium"
         set its size to 30
