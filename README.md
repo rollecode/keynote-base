@@ -1,10 +1,8 @@
 # Keynote base
 
-Rolle's personal speaker template. Not a Dude template: no logo, no brand slides. Dude appears as the title line and as whatever the talk happens to be about.
+Rolle's personal speaker template for slides.
 
-Built for two talks: [Mindtrek 2026](https://www.mindtrek.org/) on 6.10.2026 in Tampere, and [WP Suomi 2026](https://wpsuomi.fi/) on 16.10.2026 in Oulu.
-
-## What is here
+## Structure
 
 | Path | What it is |
 | -- | -- |
