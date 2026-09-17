@@ -1,4 +1,4 @@
-# Keynote base
+# Keynote base (WIP)
 
 Rolle's personal speaker template for slides.
 
