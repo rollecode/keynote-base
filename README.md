@@ -56,7 +56,7 @@ The headline move is one Unbounded phrase followed by one Instrument Serif itali
 | Body | `#2E1B34` | 14.2:1 |
 | Code panel | `#E6DEFA` | its ink `#2B1B33` at 12.4:1 |
 
-Nothing on a slide is below 8:1. The 2023 deck failed in a bright auditorium because a dark ground plus gradient text loses its contrast the moment ambient light washes the projection. Hence: light ground, flat fills, no gradient text anywhere.
+Nothing on a slide is below 7.5:1. The 2023 deck failed in a bright auditorium because a dark ground plus gradient text loses its contrast the moment ambient light washes the projection. Hence: light ground, flat fills, no gradient text anywhere.
 
 ## Portrait
 
