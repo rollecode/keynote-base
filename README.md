@@ -1,6 +1,23 @@
-# Keynote base (WIP)
+<h1 align="center">🚀 Keynote base</h1>
 
-Rolle's personal speaker template for slides.
+<p align="center">
+  <strong>Rolle's personal speaker template for slides.</strong>
+</p>
+
+<p align="center">
+  <img style="height:28px;width:auto;" src="https://github.com/user-attachments/assets/86155721-5148-4ca1-b2f1-9731af65bf27" alt="Keynote" />
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML" />
+  <img src="https://img.shields.io/badge/PDF-b21c20?style=for-the-badge&logo=html5&logoColor=white" alt="PDF" />
+  <img src="https://img.shields.io/badge/bash-%23121011.svg?style=for-the-badge&color=%23222222&logo=gnu-bash&logoColor=white" alt="Bash" />
+  <img src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="macOS" />
+</p>
+
+---
+
+<img width="1941" height="1090" alt="image" src="https://github.com/user-attachments/assets/20e6ed12-95e4-467e-9582-9de4fd8971f1" />
+
+> [!IMPORTANT]  
+> These slides are a work in progress and subject to change. I like to build in public.
 
 ## Structure
 
@@ -16,14 +33,14 @@ Rolle's personal speaker template for slides.
 
 ## Building
 
-```
+```bash
 ./scripts/build-assets.sh
 osascript scripts/build-key.applescript
 ```
 
 The PDF comes from headless Chrome, which is also what embeds the fonts:
 
-```
+```bash
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
   --no-pdf-header-footer --print-to-pdf=build/keynote-base.pdf index.html
 ```
@@ -62,7 +79,7 @@ Nothing on a slide is below 7.5:1. The 2023 deck failed in a bright auditorium b
 
 Regenerating it from a new photo:
 
-```
+```bash
 ffmpeg -i in.jpg -vf "format=gray,\
 curves=master='0/0.24 0.20/0.35 0.45/0.70 0.68/0.91 0.85/0.99 1/1',\
 format=rgb24,lutrgb=r='25+217*val/255':g='8+227*val/255':b='52+203*val/255'" \
@@ -75,16 +92,3 @@ format=rgb24,lutrgb=r='25+217*val/255':g='8+227*val/255':b='52+203*val/255'" \
 - No ALL CAPS, eyebrows and labels included.
 - No rounded cards with tinted fills. Hierarchy is type size and space.
 - Type runs large. The cover headline is 138 pt on a 1920 slide.
-- Colour never carries meaning on its own.
-- The contact line is the monochrome icon row, then `rolle.social`, in that order.
-- The byline is always "Founder and CTO, Digitoimisto Dude Oy".
-
-## Keynote notes
-
-The AppleScript build works around three limits, so do not be surprised by them:
-
-- A slide background colour cannot be set from AppleScript, so the ground is a full-bleed PNG.
-- Keynote cannot place SVG, so the logo and the icon row are rendered to transparent PNGs from the same files the HTML uses.
-- Keynote text boxes centre their content vertically and use much looser line spacing than the browser, so every text item is given an explicit height and the code panels are sized to what Keynote actually renders rather than to what the CSS does.
-
-Positions are close to the HTML, not identical. Nudge them in Keynote; that is what the file is for.
