@@ -1,6 +1,9 @@
 """Recompute a handed-over talk's timing bars from the live Keynote document.
 
-    python3 scripts/refresh-progress.py talks/<name>
+    python3 scripts/refresh-progress.py talks/<name> [--until N]
+
+--until N times only slides 1..N, the part actually presented. Slides after it
+(parked drafts, a review block) get a full bar.
 
 After handover the .key is the source of truth, so slide order and count can
 only be read from Keynote itself. Each slide's weight is inferred from what is
@@ -70,6 +73,7 @@ def osa(script):
 
 def main():
     talk = (ROOT / sys.argv[1]).resolve()
+    until = next((int(a.split("=", 1)[1]) for a in sys.argv[2:] if a.startswith("--until=")), None)
     cfg = runpy.run_path(str(talk / "talk.py"))
     key = f'{cfg["KEY_NAME"]}.key'
     slides = []
@@ -78,11 +82,12 @@ def main():
         slides.append(weight(imgs, int(big), int(count), first))
 
     deck.TALK_MIN = cfg["SLOT_MIN"] - cfg["QA_MIN"]
-    scale = deck.TALK_MIN / sum(slides)
+    timed = slides[:until] if until else slides
+    scale = deck.TALK_MIN / sum(timed)
     run, deck.TIMING = 0.0, []
-    for w in slides:
-        run += w * scale
-        deck.TIMING.append(run)
+    for n, w in enumerate(slides, 1):
+        run = run + w * scale if (not until or n <= until) else deck.TALK_MIN
+        deck.TIMING.append(min(run, deck.TALK_MIN))
     deck.DECK = slides                      # render_bars only needs the count
     deck.GEN = talk / "keyassets"
     deck.render_bars()
