@@ -1,2 +1,5 @@
 .DS_Store
 build/keyassets/
+__pycache__/
+build/keyassets/_sheets/
+talks/

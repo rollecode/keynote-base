@@ -1,3 +1,13 @@
+### 0.2.0: 2026-09-24
+
+* Add deck.py, one source for HTML, PDF, Keynote
+* Add statement, bullets and dense list layouts
+* Add dark syntax-highlighted code panels
+* Add clock-based timing bar to slide footers
+* Add private talks folder outside git
+* Refuse Keynote rebuild without --force
+* Shrink social icons, add arrow before rolle.social
+
 ### 0.1.0: 2026-09-16
 
 * Init repo

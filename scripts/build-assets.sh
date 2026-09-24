@@ -13,8 +13,7 @@ ground="0xF4F0FF"
 panel="0xE6DEFA"
 
 ffmpeg -y -loglevel error -f lavfi -i "color=c=$ground:s=1920x1080" -frames:v 1 "$out/bg.png"
-ffmpeg -y -loglevel error -f lavfi -i "color=c=$panel:s=819x110" -frames:v 1 "$out/panel-left.png"
-ffmpeg -y -loglevel error -f lavfi -i "color=c=$panel:s=819x440" -frames:v 1 "$out/panel-right.png"
+
 
 # Icon row, lifted straight out of index.html so the two never drift apart.
 python3 - "$root" "$out" <<'PY'
@@ -27,18 +26,22 @@ icons = icons.replace('width="35"', 'width="70"')
 (out / "icons.html").write_text(
     '<body style="margin:0"><div style="display:inline-flex;align-items:center;'
     'gap:42px;color:#4A3C4E">' + icons + '</div></body>')
-(out / "logo.html").write_text(
-    '<body style="margin:0"><img src="%s" width="720"></body>'
-    % (root / "assets" / "mindtrek-logo.svg"))
+for name, svg, w in (("logo", "mindtrek-logo.svg", 720), ("wpsuomi", "wpsuomi-logo.svg", 720)):
+    (out / ("%s.html" % name)).write_text(
+        '<body style="margin:0"><img src="%s" width="%d"></body>'
+        % (root / "assets" / svg, w))
 PY
 
 "$chrome" --headless --disable-gpu --default-background-color=00000000 \
   --screenshot="$out/icons-full.png" --window-size=760,80 "$out/icons.html" 2>/dev/null
 "$chrome" --headless --disable-gpu --default-background-color=00000000 \
   --screenshot="$out/logo-full.png" --window-size=730,110 "$out/logo.html" 2>/dev/null
+"$chrome" --headless --disable-gpu --default-background-color=00000000 \
+  --screenshot="$out/wpsuomi-full.png" --window-size=730,190 "$out/wpsuomi.html" 2>/dev/null
 
 ffmpeg -y -loglevel error -i "$out/icons-full.png" -vf "crop=706:64:0:0,format=rgba" "$out/icons.png"
 ffmpeg -y -loglevel error -i "$out/logo-full.png" -vf "crop=720:93:0:0,format=rgba" "$out/mindtrek.png"
+ffmpeg -y -loglevel error -i "$out/wpsuomi-full.png" -vf "crop=720:173:0:0,format=rgba" "$out/wpsuomi.png"
 
 rm -f "$out"/*-full.png "$out"/*.html
 echo "assets built in $out"
