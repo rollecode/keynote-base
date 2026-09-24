@@ -127,13 +127,28 @@ h1 em {
   padding: 84px 108px 72px;
   display: flex;
   flex-direction: column;
-  gap: 69px;
+  gap: 56px;
 }
+
+/* Heading and body travel together, centred as one group above the footer, so
+   neither the heading nor the content is left stranded in empty space. */
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 48px;
+}
+
+.content > h2 { margin-top: auto; }
+.content > .body { flex: 0 0 auto; margin-bottom: auto; }
+.content > .footer { margin-top: 0; }
 
 h2 {
   margin: 0;
   font-family: var(--display);
-  font-size: 102px;
+  font-size: 76px;
   line-height: 0.96;
   font-weight: 800;
   letter-spacing: -0.05em;
@@ -143,7 +158,7 @@ h2 em {
   font-family: var(--serif);
   font-style: italic;
   font-weight: 400;
-  font-size: 132px;
+  font-size: 98px;
   letter-spacing: -0.02em;
   color: var(--violet);
 }
@@ -151,21 +166,21 @@ h2 em {
 .pairs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 60px 108px;
+  gap: 72px 108px;
 }
 
 .pair { display: flex; flex-direction: column; gap: 12px; }
 
 .pair__label {
   font-family: var(--display);
-  font-size: 51px;
+  font-size: 42px;
   font-weight: 600;
   letter-spacing: -0.04em;
   color: var(--violet);
 }
 
 .pair__body {
-  font-size: 39px;
+  font-size: 34px;
   line-height: 1.38;
   font-weight: 400;
   color: var(--body);
@@ -176,7 +191,7 @@ h2 em {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 400;
   color: var(--secondary);
 }
@@ -207,15 +222,15 @@ h2 em {
   padding: 84px 108px 72px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 42px;
 }
 
-.statement h1 { font-size: 108px; }
-.statement h1 em { font-size: 140px; }
-.statement .standfirst { font-size: 40px; }
+.statement .body { gap: 40px; }
+.statement h1 { font-size: 92px; }
+.statement h1 em { font-size: 118px; }
+.statement .standfirst { font-size: 36px; }
 
-/* Bullets and the dense ways list */
+/* Bullets and the dense ways list. The dash is a real span, because Keynote
+   positions come from measuring the page and a pseudo-element cannot be measured. */
 
 .bullets, .ways {
   margin: 0;
@@ -223,43 +238,52 @@ h2 em {
   list-style: none;
 }
 
-.bullets { display: flex; flex-direction: column; gap: 33px; }
-
-.bullets li {
-  font-size: 44px;
-  line-height: 1.34;
-  color: var(--body);
-  padding-left: 66px;
-  text-indent: -66px;
-}
-
-.bullets li::before,
-.ways li::before {
-  content: "\2014";
-  color: var(--violet);
-  padding-right: 24px;
-}
-
+.bullets { display: flex; flex-direction: column; gap: 36px; }
 .ways {
   display: grid;
   grid-template-rows: repeat(6, auto);
   grid-auto-flow: column;
-  gap: 27px 60px;
+  gap: 28px 60px;
 }
 
-.ways li {
-  font-size: 32px;
-  line-height: 1.3;
+.bullets li, .ways li { display: flex; color: var(--body); }
+.dash { flex-shrink: 0; color: var(--violet); }
+
+.bullets li { font-size: 38px; line-height: 1.34; }
+.bullets .dash { width: 60px; }
+
+.ways li { font-size: 30px; line-height: 1.3; }
+.ways .dash { width: 46px; }
+
+/* About slide: two sections on the left, photos stacked full-bleed on the right. */
+
+.about { display: flex; }
+
+.about__column {
+  flex-grow: 1;
+  min-width: 0;
+  padding: 84px 84px 72px 108px;
+  display: flex;
+  flex-direction: column;
+}
+
+.about .body { gap: 64px; }
+.about__section { display: flex; flex-direction: column; gap: 18px; }
+.about h2 { font-size: 64px; }
+.about h2 em { font-size: 82px; }
+
+.about__text {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.4;
   color: var(--body);
-  padding-left: 50px;
-  text-indent: -50px;
 }
 
-.ways li::before { padding-right: 18px; }
+.about__photos { display: flex; flex-direction: column; flex-shrink: 0; }
+.about__photos img { display: block; width: 720px; height: 540px; object-fit: cover; }
 
 /* Code slide, panel styling lives in code.css */
 
-.code { gap: 57px; }
 
 .code__columns {
   display: grid;
@@ -271,7 +295,7 @@ h2 em {
 
 .code__label {
   font-family: var(--serif);
-  font-size: 51px;
+  font-size: 42px;
   line-height: 1;
   color: var(--violet);
 }
@@ -280,7 +304,7 @@ h2 em {
 .takeaway {
   margin: 0;
   max-width: 1560px;
-  font-size: 38px;
+  font-size: 32px;
   line-height: 1.4;
   font-weight: 400;
   color: var(--body);

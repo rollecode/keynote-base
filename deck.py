@@ -56,7 +56,7 @@ SLOT_MIN = 45
 QA_MIN = 10
 TALK_MIN = None  # SLOT_MIN - QA_MIN, set once a talk is loaded
 WEIGHT = {"cover": 0.4, "statement": 0.5, "bullets": 1.0,
-          "pairs": 1.0, "list": 1.6, "code": 1.8}
+          "pairs": 1.0, "list": 1.6, "code": 1.8, "about": 1.5}
 
 
 def timings():
@@ -152,6 +152,11 @@ DECK = [
     dict(layout="cover", head="Talking about", em="something great",
          standfirst=["One line that says what this is,", "and one that says why it matters"]),
 
+    dict(layout="about", sections=[
+        ("About", "me", "Two short sections for the speaker slide. Photos stack full-bleed on the right when the talk supplies them."),
+        ("And", "the company", "Keep each one to three lines. The heading does the work, the paragraph gives the room something to read while you talk."),
+    ]),
+
     dict(layout="statement", head="One idea,", em="said plainly",
          standfirst=["For section breaks, and for the lines", "you want the room to remember."]),
 
@@ -206,6 +211,9 @@ SOCIAL_ICONS = """<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
 
 def esc(s):
     return html.escape(s, quote=False)
+
+
+DASH = '<span class="dash">\u2014</span>'
 
 
 def h2(slide):
@@ -264,8 +272,10 @@ def html_slide(slide, n):
     if lay == "statement":
         sf = "<br>".join(esc(l) for l in slide["standfirst"])
         return f'''<section class="slide statement">
-  <h1>{esc(slide["head"])}<br><em>{esc(slide["em"])}</em></h1>
-  <p class="standfirst">{sf}</p>
+  <div class="body">
+    <h1>{esc(slide["head"])}<br><em>{esc(slide["em"])}</em></h1>
+    <p class="standfirst">{sf}</p>
+  </div>
   {footer(n)}
 </section>'''
 
@@ -278,35 +288,42 @@ def html_slide(slide, n):
             for a, b in slide["pairs"])
         return f'''<section class="slide content">
   {h2(slide)}
+  <div class="body">
   <div class="pairs">
 {cells}
+  </div>
   </div>
   {footer(n)}
 </section>'''
 
     if lay == "bullets":
-        items = "\n".join(f'    <li>{esc(i)}</li>' for i in slide["items"])
+        items = "\n".join(f'    <li>{DASH}<span>{esc(i)}</span></li>' for i in slide["items"])
         return f'''<section class="slide content">
   {h2(slide)}
+  <div class="body">
   <ul class="bullets">
 {items}
   </ul>
+  </div>
   {footer(n)}
 </section>'''
 
     if lay == "list":
-        items = "\n".join(f'    <li>{esc(i)}</li>' for i in slide["items"])
+        items = "\n".join(f'    <li>{DASH}<span>{esc(i)}</span></li>' for i in slide["items"])
         return f'''<section class="slide content">
   {h2(slide)}
+  <div class="body">
   <ul class="ways">
 {items}
   </ul>
+  </div>
   {footer(n)}
 </section>'''
 
     if lay == "code":
         return f'''<section class="slide content code">
   {h2(slide)}
+  <div class="body">
   <div class="code__columns">
     <div class="code__column">
       <div class="code__label">{esc(slide["left_label"])}</div>
@@ -318,7 +335,25 @@ def html_slide(slide, n):
     </div>
   </div>
   <p class="takeaway">{esc(slide["takeaway"])}</p>
+  </div>
   {footer(n)}
+</section>'''
+
+    if lay == "about":
+        sections = "\n".join(
+            f'''      <div class="about__section">
+        <h2>{esc(head)} <em>{esc(em)}</em></h2>
+        <p class="about__text">{esc(text)}</p>
+      </div>''' for head, em, text in slide["sections"])
+        photos = "".join(f'<img src="{esc(ph)}" alt="">' for ph in slide.get("photos", []))
+        side = f'\n  <div class="about__photos">{photos}</div>' if photos else ""
+        return f'''<section class="slide about">
+  <div class="about__column">
+    <div class="body">
+{sections}
+    </div>
+    {footer(n)}
+  </div>{side}
 </section>'''
 
     raise ValueError(lay)
@@ -344,126 +379,233 @@ def emit_html():
 
 
 # ---------------------------------------------------------- AppleScript
+#
+# Keynote gets no layout of its own. Chrome lays the HTML out, MEASURE_JS reads
+# back every text line and image box, and the script below places exactly that.
+# A design change is therefore a CSS change, and Keynote follows it.
+
+MEASURE_JS = r"""
+(async () => {
+  await document.fonts.ready;
+  const blockOf = el => {
+    while (el && getComputedStyle(el).display.startsWith('inline')) el = el.parentElement;
+    return el;
+  };
+  const skip = n => n.parentElement.closest('pre, .progress, svg, .social__icons') || !n.nodeValue.trim();
+  const out = [];
+  for (const sec of document.querySelectorAll('section.slide')) {
+    const R = sec.getBoundingClientRect();
+    const box = el => { const r = el.getBoundingClientRect();
+      return {x: r.left - R.left, y: r.top - R.top, w: r.width, h: r.height}; };
+    const images = [];
+    for (const [kind, sel] of [['portrait', '.portrait'], ['logo', '.event__logo'],
+        ['photo', '.about__photos img'], ['code', 'pre'], ['progress', '.progress'],
+        ['icons', '.social__icons']])
+      sec.querySelectorAll(sel).forEach(e => images.push({kind, src: e.getAttribute('src') || '', ...box(e)}));
+
+    // One item per block, so Keynote wraps paragraphs itself and they stay
+    // editable as one box. Forced <br> breaks start a new item; soft wraps do not.
+    const lines = [], range = document.createRange();
+    const walker = document.createTreeWalker(sec, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {acceptNode: n => {
+      if (n.nodeType === 1)
+        return n.nodeName === 'BR' ? NodeFilter.FILTER_ACCEPT
+          : n.matches('pre, .progress, svg, .social__icons') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP;
+      return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }});
+    let cur = null, curBlock = null, breakNext = false, prevLeft = 0, prevRight = 0, node;
+    while ((node = walker.nextNode())) {
+      if (node.nodeType === 1) { breakNext = true; continue; }
+      const el = node.parentElement, cs = getComputedStyle(el), block = blockOf(el);
+      const st = {family: cs.fontFamily, weight: cs.fontWeight, style: cs.fontStyle,
+                  size: parseFloat(cs.fontSize), color: cs.color};
+      const key = JSON.stringify(st), t = node.nodeValue;
+      for (let i = 0; i < t.length; i++) {
+        range.setStart(node, i); range.setEnd(node, i + 1);
+        const rs = range.getClientRects();
+        const space = /\s/.test(t[i]);
+        if (!rs.length) { if (space && cur && !breakNext) cur.pendingSpace = true; continue; }
+        const r = rs[0], x = r.left - R.left, y = r.top - R.top;
+        const fresh = !cur || block !== curBlock || breakNext ||
+          (!cur.wrapped && x - prevRight > 0.6 * st.size && Math.abs(y - cur.top) < st.size);
+        if (fresh && space) continue;
+        if (fresh) {
+          const br = block.getBoundingClientRect();
+          cur = {x, top: y, bottom: y + r.height, right: x, width: br.right - R.left - x, wrapped: false, runs: []};
+          lines.push(cur); curBlock = block; breakNext = false;
+        } else if (!space && x < prevLeft - 1) {
+          cur.wrapped = true;
+        }
+        if (!cur.wrapped) {
+          cur.top = Math.min(cur.top, y); cur.bottom = Math.max(cur.bottom, y + r.height);
+          if (!space) cur.right = Math.max(cur.right, x + r.width);
+        }
+        let ch = space ? ' ' : t[i];
+        if (cur.pendingSpace && !space) ch = ' ' + ch;
+        cur.pendingSpace = false;
+        const last = cur.runs[cur.runs.length - 1];
+        if (last && last.text.endsWith(' ') && ch === ' ') { prevLeft = x; prevRight = x + r.width; continue; }
+        if (last && last.key === key) last.text += ch; else cur.runs.push({key, ...st, text: ch});
+        prevLeft = x; prevRight = x + r.width;
+      }
+    }
+    for (const l of lines) {
+      const z = l.runs[l.runs.length - 1]; z.text = z.text.replace(/\s+$/, '');
+      l.runs = l.runs.filter(r => r.text.length);
+      l.runs.forEach(r => delete r.key);
+      delete l.pendingSpace;
+    }
+    out.push({images, lines});
+  }
+  const tag = document.createElement('script');
+  tag.type = 'application/json'; tag.id = '__measure'; tag.textContent = JSON.stringify(out);
+  document.body.appendChild(tag);
+})();
+"""
+
+
+def measure(page):
+    """Lay the deck out in Chrome and read back where everything landed."""
+    import json
+    src = page.read_text()
+    src = src.replace("<head>", f'<head>\n<base href="{page.parent.as_uri()}/">', 1)
+    src = src.replace("</body>", f"<script>{MEASURE_JS}</script>\n</body>", 1)
+    tmp = GEN / "_sheets" / "measure.html"
+    tmp.parent.mkdir(parents=True, exist_ok=True)
+    tmp.write_text(src)
+    dom = subprocess.run(
+        [CHROME, "--headless", "--disable-gpu", "--hide-scrollbars",
+         "--virtual-time-budget=20000", "--window-size=1920,1080",
+         "--dump-dom", tmp.as_uri()],
+        check=True, capture_output=True, text=True).stdout
+    m = re.search(r'<script type="application/json" id="__measure">(.*?)</script>', dom, re.S)
+    if not m:
+        raise SystemExit("measure: Chrome returned no layout, fonts may not have loaded")
+    return json.loads(m.group(1))
+
 
 def a(s):
-    """One AppleScript string literal, newlines rejoined with & return &."""
-    parts = []
-    for line in s.split("\n"):
-        line = line.replace("\\", "\\\\").replace('"', '\\"')
-        parts.append(f'"{line}"')
-    return " & return & ".join(parts)
+    """One AppleScript string literal."""
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def text_item(var, body, x, y, w, h, font, size, color):
-    return f'''      set {var} to make new text item with properties {{object text:{body}, position:{{{x}, {y}}}, width:{w}, height:{h}}}
-      tell object text of {var}
-        set its font to "{font}"
-        set its size to {size}
-        set its color to {color}
-      end tell
-'''
+def ps_font(run):
+    fam, w = run["family"].lower(), int(run["weight"])
+    if "unbounded" in fam:
+        return "Unbounded-Regular_ExtraBold" if w >= 700 else "Unbounded-Regular_SemiBold"
+    if "instrument serif" in fam:
+        return "InstrumentSerif-Italic" if run["style"] == "italic" else "InstrumentSerif-Regular"
+    if "geist mono" in fam:
+        return "GeistMono-Regular"
+    return {500: "Geist-Medium", 600: "Geist-SemiBold", 700: "Geist-Bold"}.get(w, "Geist-Regular")
 
 
-def heading(var, slide, y, size_main, size_em, width=1704):
-    """One text item, second clause restyled in place so Keynote does the layout."""
-    head, em = slide["head"], slide["em"]
-    lo, hi = len(head) + 2, len(head) + 1 + len(em)
-    return (
-        text_item(var, a(head + " " + em), 108, y, width, int(size_em * 1.45),
-                  "Unbounded-Regular_ExtraBold", size_main, "inkColor")
-        + f'''      tell characters {lo} thru {hi} of object text of {var}
-        set its font to "InstrumentSerif-Italic"
-        set its size to {size_em}
-        set its color to violetColor
-      end tell
-'''
-    )
+def ks_color(css):
+    r, g, b = (int(v) for v in re.findall(r"\d+", css)[:3])
+    return f"{{{r * 257}, {g * 257}, {b * 257}}}"
 
 
-def as_slide(slide, n, var):
-    lay = slide["layout"]
-    out = [f'    tell {var}\n',
-           '      make new image with properties {file:(POSIX file (assetDir & "bg.png")), position:{0, 0}, width:1920, height:1080}\n']
+# Keynote draws text inside its text item's inner inset. (x, y) in px to
+# subtract from Chrome's glyph box, calibrated 24.9.2026 against a Keynote
+# export of all 38 slides: the same at every size, per face.
+INSET = {"unbounded": (6, 5), "serif": (5, 5), "geist": (4, 5)}
+# ponytail: one-off for the cover's 174px italic, whose overhang Keynote draws
+# 8px further left. Replace with a per-size curve if more huge italics appear.
+HUGE_ITALIC = (150, -8)
 
-    if lay == "cover":
-        out.append('      make new image with properties {file:(POSIX file (repoRoot & "/assets/portrait-crop.jpg")), position:{1461, 0}, width:459, height:1080}\n')
-        out.append(f'      make new image with properties {{file:(POSIX file (assetDir & "{LOGO[1]}")), position:{{108, 76}}, width:240, height:{LOGO[2]}}}\n')
-        # Icons, byline and url as Rolle set them by hand in Keynote on 21.9.2026.
-        out.append('      make new image with properties {file:(POSIX file (assetDir & "icons.png")), position:{108, 979}, width:309, height:28}\n')
-        out.append(text_item("ev", a(EVENT), 106, 152, 1000, 34, "Geist-Medium", 24, "eventColor"))
-        out.append(text_item("h1a", a(slide["head"]), 108, 302, 1100, 150, "Unbounded-Regular_ExtraBold", 138, "inkColor"))
-        out.append(text_item("h1b", a(slide["em"]), 108, 416, 1100, 180, "InstrumentSerif-Italic", 174, "violetColor"))
-        y = 613
-        for i, line in enumerate(slide["standfirst"]):
-            out.append(text_item(f"sf{i}", a(line), 108, y, 1100, 52, "Geist-Regular", 38, "subtitleColor"))
-            y += 52
-        out.append(text_item("by1", a("Rolle Laukkarinen"), 104, 869, 1100, 48, "Geist-SemiBold", 36, "inkColor"))
-        out.append(text_item("by2", a("Founder and CTO, Digitoimisto Dude Oy"), 104, 917, 1100, 40, "Geist-Regular", 29, "secondaryColor"))
-        out.append(text_item("by3", a("\u2192  rolle.social"), 433, 975, 500, 36, "Geist-Medium", 26, "secondaryColor"))
-        out.append('    end tell\n')
-        return "".join(out)
 
-    if lay == "statement":
-        out.append(text_item("sa", a(slide["head"]), 108, 300, 1704, 150, "Unbounded-Regular_ExtraBold", 108, "inkColor"))
-        out.append(text_item("sb", a(slide["em"]), 108, 420, 1704, 190, "InstrumentSerif-Italic", 140, "violetColor"))
-        y = 660
-        for i, line in enumerate(slide["standfirst"]):
-            out.append(text_item(f"ss{i}", a(line), 108, y, 1500, 56, "Geist-Regular", 40, "subtitleColor"))
-            y += 56
-    elif lay == "pairs":
-        out.append(heading("hd", slide, 96, 102, 132))
-        coords = [(108, 300), (1014, 300), (108, 560), (1014, 560)]
-        for i, (label, body) in enumerate(slide["pairs"]):
-            x, y = coords[i]
-            out.append(text_item(f"pl{i}", a(label), x, y, 798, 70, "Unbounded-Regular_SemiBold", 51, "violetColor"))
-            out.append(text_item(f"pb{i}", a(body), x, y + 76, 798, 150, "Geist-Regular", 37, "bodyColor"))
-    elif lay == "bullets":
-        out.append(heading("hd", slide, 96, 102, 132))
-        y = 320
-        for i, item in enumerate(slide["items"]):
-            out.append(text_item(f"bl{i}", a("—   " + item), 108, y, 1704, 110, "Geist-Regular", 44, "bodyColor"))
-            y += 128
-    elif lay == "list":
-        out.append(heading("hd", slide, 96, 102, 132))
-        col_w, rows = 568, 6
-        for i, item in enumerate(slide["items"]):
-            x = 108 + (i // rows) * col_w
-            y = 320 + (i % rows) * 98
-            out.append(text_item(f"lw{i}", a("—   " + item), x, y, col_w - 40, 90, "Geist-Regular", 32, "bodyColor"))
-    elif lay == "code":
-        out.append(heading("hd", slide, 90, 92, 118))
-        tall = 0
-        for side, lx in (("left", 108), ("right", 993)):
-            label = slide[f"{side}_label"]
-            ph = panel_height(slide[f"{side}_code"])
-            tall = max(tall, ph)
-            out.append(text_item(f"cl_{side}", a(label), lx, 244, 819, 66, "InstrumentSerif-Regular", 48, "violetColor"))
-            out.append(f'      make new image with properties {{file:(POSIX file (genDir & "code-{n}-{side}.png")), position:{{{lx}, 330}}, width:{PANEL_W}, height:{ph}}}\n')
-        # Sits under the taller panel, never on top of the footer.
-        ty = min(330 + tall + 48, 790)
-        out.append(text_item("tk", a(slide["takeaway"]), 108, ty, 1704, 120, "Geist-Regular", 34, "bodyColor"))
-    else:
-        raise ValueError(lay)
+def face(run):
+    fam = run["family"].lower()
+    return "unbounded" if "unbounded" in fam else "serif" if "instrument" in fam else "geist"
 
-    out.append(text_item("fr", a(RUNNING), 108, 946, 900, 40, "Geist-Regular", 26, "secondaryColor"))
-    # Keynote exposes no text alignment, so the label and bar ship as one bitmap
-    # laid out by the same CSS the web slide uses.
-    out.append(f'      make new image with properties {{file:(POSIX file (genDir & "prog-{n}.png")), position:{{{1812 - PROG_W}, 950}}, width:{PROG_W}, height:{PROG_H}}}\n')
-    out.append('    end tell\n')
+
+def as_text(line, var):
+    runs = line["runs"]
+    text = "".join(r["text"] for r in runs)
+    big = max(runs, key=lambda r: r["size"])
+    ix, iy = INSET[face(big)]
+    if runs[0]["style"] == "italic" and runs[0]["size"] > HUGE_ITALIC[0]:
+        ix += HUGE_ITALIC[1]
+    x, y = line["x"] - ix, line["top"] - iy
+    # The block's own width, plus slack: Keynote has no letter-spacing control,
+    # so its Unbounded runs a little wider than Chrome's.
+    w = max(line["width"], line["right"] - line["x"]) * 1.04 + 16
+    h = line["bottom"] - line["top"] + 24
+    first = runs[0]
+    out = [f'      set {var} to make new text item with properties {{object text:{a(text)}, position:{{{x:.0f}, {y:.0f}}}, width:{w:.0f}, height:{h:.0f}}}\n',
+           f'      tell object text of {var}\n'
+           f'        set its font to "{ps_font(first)}"\n'
+           f'        set its size to {first["size"]:g}\n'
+           f'        set its color to {ks_color(first["color"])}\n'
+           f'      end tell\n']
+    pos = len(first["text"]) + 1
+    for r in runs[1:]:
+        end = pos + len(r["text"]) - 1
+        out.append(f'      tell characters {pos} thru {end} of object text of {var}\n'
+                   f'        set its font to "{ps_font(r)}"\n'
+                   f'        set its size to {r["size"]:g}\n'
+                   f'        set its color to {ks_color(r["color"])}\n'
+                   f'      end tell\n')
+        pos = end + 1
+    # Keynote ignores the requested height: it fits the box to the text and keeps
+    # the box centre fixed, on creation and again on every size change. Setting
+    # the position last pins the top edge where the measurement says.
+    out.append(f'      set position of {var} to {{{x:.0f}, {y:.0f}}}\n')
     return "".join(out)
 
 
-def emit_applescript():
+def as_image(path_expr, x, y, w, h):
+    return (f'      make new image with properties {{file:(POSIX file ({path_expr})), '
+            f'position:{{{x:.0f}, {y:.0f}}}, width:{w:.0f}, height:{h:.0f}}}\n')
+
+
+ICONS_ASPECT = 706 / 64  # icons.png from build-assets.sh
+
+
+def a_multi(s):
+    """A string literal whose line breaks become AppleScript returns."""
+    return " & return & ".join(a(line) for line in s.split("\n"))
+
+
+def as_slide(m, n, var):
+    out = [f"    tell {var}\n",
+           as_image('assetDir & "bg.png"', 0, 0, 1920, 1080)]
+    sides = iter(("left", "right"))
+    for im in m["images"]:
+        k, x, y, w, h = im["kind"], im["x"], im["y"], im["w"], im["h"]
+        if k == "portrait":
+            out.append(as_image('repoRoot & "/assets/portrait-crop.jpg"', x, y, w, h))
+        elif k == "logo":
+            out.append(as_image(f'assetDir & "{LOGO[1]}"', x, y, w, h))
+        elif k == "photo":
+            rel = (OUT / im["src"]).resolve().relative_to(ROOT).as_posix()
+            out.append(as_image(f'repoRoot & "/{rel}"', x, y, w, h))
+        elif k == "code":
+            if abs(w - PANEL_W) > 1.5:
+                print(f"warning: slide {n} code panel is {w:.0f}px wide, bitmaps are {PANEL_W}")
+            out.append(as_image(f'genDir & "code-{n}-{next(sides)}.png"', x, y, w, h))
+        elif k == "progress":
+            out.append(as_image(f'genDir & "prog-{n}.png"', x + w - PROG_W, y + h / 2 - PROG_H / 2, PROG_W, PROG_H))
+        elif k == "icons":
+            out.append(as_image('assetDir & "icons.png"', x, y, h * ICONS_ASPECT, h))
+    for i, line in enumerate(m["lines"]):
+        out.append(as_text(line, f"t{i}"))
+    notes = DECK[n - 1].get("notes")
+    if notes:
+        out.append(f"      set presenter notes to {a_multi(notes.strip())}\n")
+    out.append("    end tell\n")
+    return "".join(out)
+
+
+def emit_applescript(layout):
     makes = "".join(
         f'    set s{i + 1} to make new slide with properties {{base slide:blankMaster}}\n'
-        for i in range(1, len(DECK)))
+        for i in range(1, len(layout)))
     bodies = "\n".join(
-        as_slide(s, i + 1, "slide 1" if i == 0 else f"s{i + 1}")
-        for i, s in enumerate(DECK))
+        as_slide(m, i + 1, "slide 1" if i == 0 else f"s{i + 1}")
+        for i, m in enumerate(layout))
     rel = lambda p: p.relative_to(ROOT).as_posix()
-    return f'''-- Generated by deck.py. Do not edit; edit the deck source and regenerate.
+    return f"""-- Generated by deck.py from the measured HTML layout. Do not edit.
 -- Run: osascript {rel(SCRIPT)} --force
--- Static bitmaps come from scripts/build-assets.sh, the rest from deck.py.
 --
 -- This overwrites {KEY.name} wholesale, losing anything done by hand in
 -- Keynote, so it will not run without --force.
@@ -478,17 +620,6 @@ set assetDir to repoRoot & "/build/keyassets/"
 set genDir to repoRoot & "/{rel(GEN)}/"
 set outPath to repoRoot & "/{rel(KEY)}"
 
--- Palette, 16-bit channels
-set inkColor to {{6425, 2056, 13364}} -- #190834
-set violetColor to {{19532, 7453, 38293}} -- #4C1D95
-set subtitleColor to {{14906, 8738, 16448}} -- #3A2240
-set secondaryColor to {{19018, 15420, 20046}} -- #4A3C4E
-set bodyColor to {{11822, 6939, 13364}} -- #2E1B34
-set panelInkColor to {{11051, 6939, 13107}} -- #2B1B33
-set eventColor to {{21331, 18018, 26985}} -- #534669
-set progressColor to {{11822, 3855, 24158}} -- #2E0F5E
-set progressMutedColor to {{20303, 16962, 29298}} -- #4F4272
-
 tell application "Keynote"
   activate
   set doc to make new document with properties {{width:1920, height:1080}}
@@ -501,7 +632,7 @@ tell application "Keynote"
   end tell
 end tell
 end run
-'''
+"""
 
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -583,11 +714,22 @@ def render_bars():
              PROG_W * SCALE, PROG_H * SCALE, out / f"prog-{n}.png")
 
 
+def title(slide):
+    if "sections" in slide:
+        return " / ".join(f"{h} {e}" for h, e, _ in slide["sections"])
+    return f"{slide['head']} {slide['em']}"
+
+
 def emit_outline():
     rows = []
     for i, (s, m) in enumerate(zip(DECK, TIMING), 1):
-        rows.append(f"| {i} | {s['head']} {s['em']} | {s['layout']} | {m:.1f} |")
+        rows.append(f"| {i} | {title(s)} | {s['layout']} | {m:.1f} |")
     body = "\n".join(rows)
+    spoken = "\n\n".join(
+        f"### {i}. {title(s)}\n\n{s['notes'].strip()}"
+        for i, s in enumerate(DECK, 1) if s.get("notes"))
+    if spoken:
+        body += "\n\n## Speaker notes\n\n" + spoken
     return f"""# {DECK[0]['head']} {DECK[0]['em']}
 
 Generated by deck.py. Do not edit the running order here; edit DECK in talk.py.
@@ -633,7 +775,8 @@ if __name__ == "__main__":
     TIMING = timings()
     (ROOT / "code.css").write_text(emit_code_css())
     (OUT / "index.html").write_text(emit_html())
-    SCRIPT.write_text(emit_applescript())
+    GEN.mkdir(parents=True, exist_ok=True)
+    SCRIPT.write_text(emit_applescript(measure(OUT / "index.html")))
     if OUT != ROOT:
         (OUT / "OUTLINE.md").write_text(emit_outline())
     made = render_code_panels()

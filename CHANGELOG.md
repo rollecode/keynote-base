@@ -7,6 +7,11 @@
 * Add private talks folder outside git
 * Refuse Keynote rebuild without --force
 * Shrink social icons, add arrow before rolle.social
+* Lay Keynote out from measured HTML
+* Add about layout with stacked photos
+* Add presenter notes from slide source
+* Smaller headings, content centred under them
+* Lift code comment contrast above 7.5:1
 
 ### 0.1.0: 2026-09-16
 

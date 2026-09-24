@@ -42,20 +42,22 @@ python3 deck.py                # index.html, the PDF, code panels, the Keynote s
 osascript scripts/build-key.applescript --force
 ```
 
-`deck.py` writes the HTML, prints it to PDF through headless Chrome, which is also what embeds the fonts, and renders the code panels and timing bars as bitmaps. Keynote re-spaces pasted text and distorts scaled images, so neither its text layout nor its image scaling is trusted with code.
+`deck.py` writes the HTML and prints it to PDF through headless Chrome, which is also what embeds the fonts. Keynote gets no layout of its own: Chrome lays the HTML out, the page is measured, and the Keynote script places every text block and image exactly where Chrome put it. A design change is a CSS change, and Keynote follows. Code panels and timing bars ship as bitmaps, because Keynote re-spaces pasted code and has no text alignment in AppleScript.
 
 The Keynote build refuses to run without `--force`. It replaces the `.key` wholesale, and anything done by hand in Keynote exists only there.
 
 ## Talks
 
-A talk is a folder under `talks/` with a `talk.py` that overrides `EVENT`, `RUNNING`, `DECK`, `LOGO`, `SLOT_MIN`, `QA_MIN` and `KEY_NAME`. Build it with:
+A talk is a folder under `talks/` with a `talk.py` that overrides `EVENT`, `RUNNING`, `DECK`, `LOGO`, `SLOT_MIN`, `QA_MIN` and `KEY_NAME`. Slides can carry `notes`, which become Keynote presenter notes.
 
 ```bash
 python3 deck.py talks/<name>
 osascript talks/<name>/build-key.applescript --force
 ```
 
-It gets its own `index.html`, PDF, `OUTLINE.md` with a timed running order, bitmaps and `.key`, all inside the folder. Slide footers show where you should be by the clock rather than a page number: each layout carries a weight, and the weights are scaled to the slot minus Q&A.
+That builds the starting deck once: `index.html`, PDF, `OUTLINE.md` with a timed running order, bitmaps and `.key`, all inside the folder. Then the deck is handed over. From that point the `.key` is the source of truth and is edited in Keynote, by hand or by AppleScript applied to the open document, and the PDF comes from Keynote's own export. Rebuilding with `--force` would throw that work away, which is why the build refuses to run without it.
+
+Slide footers show where you should be by the clock rather than a page number: each layout carries a weight, and the weights are scaled to the slot minus Q&A.
 
 ## Typefaces
 
