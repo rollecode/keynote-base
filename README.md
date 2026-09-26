@@ -19,6 +19,10 @@
 > [!IMPORTANT]  
 > These slides are a work in progress and subject to change. I like to build in public.
 
+## Talks made with this base
+
+- [Going ACF-free: replacing a plugin dependency with core WordPress](https://github.com/rollecode/wpsuomi2026-talk-slides), WP Suomi 2026 at Hotel Lasaretti, Oulu, 16.10.2026
+
 ## Structure
 
 | Path | What it is |
