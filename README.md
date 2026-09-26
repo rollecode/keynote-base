@@ -14,7 +14,7 @@
 
 ---
 
-<img width="1941" height="1090" alt="image" src="https://github.com/user-attachments/assets/20e6ed12-95e4-467e-9582-9de4fd8971f1" />
+<img width="1920" height="1080" alt="Cover slide of the speaker base" src="cover.png" />
 
 > [!IMPORTANT]  
 > These slides are a work in progress and subject to change. I like to build in public.
