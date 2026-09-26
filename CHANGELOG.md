@@ -1,3 +1,10 @@
+### 1.0.0: 2026-09-26
+
+* Add timing bar refresh for handed-over decks
+* Time only presented slides with --until
+* Take real per-slide minutes with --minutes
+* Release automatically from CHANGELOG
+
 ### 0.2.0: 2026-09-24
 
 * Add deck.py, one source for HTML, PDF, Keynote

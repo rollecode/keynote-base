@@ -1,0 +1,28 @@
+name: Release
+
+# Every push to master checks the top CHANGELOG.md heading. When that version
+# has no tag yet, it is tagged and released with its section as the notes.
+on:
+  push:
+    branches: [master]
+    paths: [CHANGELOG.md]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release the top CHANGELOG version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(grep -m1 -oP '^### \K[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md)
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version already released"; exit 0
+          fi
+          awk '/^### /{n++} n==1 && !/^### /' CHANGELOG.md > notes.md
+          gh release create "v$version" --title "$version" --notes-file notes.md \
+            --target "$GITHUB_SHA" build/keynote-base.pdf

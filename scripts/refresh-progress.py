@@ -1,6 +1,6 @@
 """Recompute a handed-over talk's timing bars from the live Keynote document.
 
-    python3 scripts/refresh-progress.py talks/<name> [--until N]
+    python3 scripts/refresh-progress.py talks/<name> [--until=N | --minutes=FILE]
 
 --until N times only slides 1..N, the part actually presented. Slides after it
 (parked drafts, a review block) get a full bar.
@@ -11,6 +11,7 @@ on it, the weights are scaled to SLOT_MIN - QA_MIN, and every footer bar is
 re-rendered and swapped in place. Text is never touched.
 """
 
+import json
 import pathlib
 import runpy
 import subprocess
@@ -85,8 +86,15 @@ def main():
     timed = slides[:until] if until else slides
     scale = deck.TALK_MIN / sum(timed)
     run, deck.TIMING = 0.0, []
+    # --minutes=file.json: hand estimates in real minutes, unscaled, so the bar
+    # shows where the talk really is; slides past the list get a full bar.
+    minutes = next((a.split("=", 1)[1] for a in sys.argv[2:] if a.startswith("--minutes=")), None)
+    est = json.loads((talk / minutes).read_text()) if minutes else None
     for n, w in enumerate(slides, 1):
-        run = run + w * scale if (not until or n <= until) else deck.TALK_MIN
+        if est is not None:
+            run = run + est[n - 1] if n <= len(est) else deck.TALK_MIN
+        else:
+            run = run + w * scale if (not until or n <= until) else deck.TALK_MIN
         deck.TIMING.append(min(run, deck.TALK_MIN))
     deck.DECK = slides                      # render_bars only needs the count
     deck.GEN = talk / "keyassets"
