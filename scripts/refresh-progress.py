@@ -78,7 +78,9 @@ def main():
     cfg = runpy.run_path(str(talk / "talk.py"))
     key = f'{cfg["KEY_NAME"]}.key'
     slides = []
-    for line in osa(DUMP % key).strip().splitlines():
+    # A multi-line first text item spills onto extra lines; keep only rows.
+    rows = [l for l in osa(DUMP % key).strip().splitlines() if l.split("|", 1)[0].isdigit()]
+    for line in rows:
         n, imgs, big, count, first = line.split("|", 4)
         slides.append(weight(imgs, int(big), int(count), first))
 
