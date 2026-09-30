@@ -21,6 +21,7 @@
 
 ## Talks made with this base
 
+- [Sovereign by habit: 20 years of self-hosting from source on European servers](https://github.com/rollecode/mindtrek2026-talk-slides), Mindtrek 2026 at Finnkino Cine Atlas, Tampere, 6.10.2026
 - [Going ACF-free: replacing a plugin dependency with core WordPress](https://github.com/rollecode/wpsuomi2026-talk-slides), WP Suomi 2026 at Hotel Lasaretti, Oulu, 16.10.2026
 
 ## Structure
